@@ -10,15 +10,14 @@ kotlin {
   sourceSets {
     getByName("commonMain") {
       dependencies {
-        implementation("com.apollographql.apollo3:apollo-runtime")
-        implementation("com.apollographql.apollo3:apollo-testing-support")
-        implementation("com.apollographql.apollo3:apollo-normalized-cache")
-        implementation("com.apollographql.apollo3:apollo-mockserver")
       }
     }
 
     getByName("commonTest") {
       dependencies {
+        implementation("com.apollographql.apollo3:apollo-runtime")
+        implementation("com.squareup.okio:okio:3.2.0")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
         implementation("org.jetbrains.kotlin:kotlin-test")
       }
     }
@@ -26,9 +25,9 @@ kotlin {
 }
 
 
-apollo {
-  service("service") {
-    packageName.set("benchmarks")
-    generateDataBuilders.set(true)
-  }
-}
+//apollo {
+//  service("service") {
+//    packageName.set("benchmarks")
+//    generateDataBuilders.set(true)
+//  }
+//}

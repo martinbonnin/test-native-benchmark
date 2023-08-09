@@ -1,13 +1,11 @@
-import benchmarks.GetRandomQuery
-import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.annotations.ApolloInternal
 import com.apollographql.apollo3.api.http.HttpMethod
 import com.apollographql.apollo3.api.http.HttpRequest
-import com.apollographql.apollo3.mockserver.MockServer
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
 import com.apollographql.apollo3.network.http.HttpEngine
-import com.apollographql.apollo3.testing.enqueueData
-import com.apollographql.apollo3.testing.internal.runTest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
+import okio.Buffer
 import kotlin.test.Test
 import kotlin.time.Duration
 import kotlin.time.measureTime
@@ -17,7 +15,7 @@ class BenchmarksTest {
     private lateinit var client: HttpEngine
 
     @OptIn(ApolloInternal::class)
-    private fun benchmark(test: suspend (Int) -> Unit) = runTest {
+    private fun benchmark(test: suspend (Int) -> Unit) = runBlocking {
         val durations = mutableListOf<Duration>()
         repeat(MEASUREMENT_COUNT) {
             durations.add(
@@ -33,17 +31,22 @@ class BenchmarksTest {
             client = DefaultHttpEngine()
         }
 
-        server.enqueueData(
-            GetRandomQuery.Data {
-                random = 42
-            }
+        val body = "hello $iteration"
+        server.enqueue(
+            MockResponse(
+                body = flowOf(Buffer().writeUtf8(body).readByteString()),
+                headers = mapOf("Content-Length" to body.length.toString()),
+            )
         )
 
-        println("$iteration - server.url=${server.url()}")
+        //println("$iteration - server.url=${server.url()}")
         HttpRequest.Builder(HttpMethod.Get, server.url())
             .build()
             .let {
                 client.execute(it)
+            }
+            .body!!.readUtf8().let {
+                //println("Got - $it")
             }
     }
 
